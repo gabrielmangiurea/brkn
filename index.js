@@ -16,7 +16,6 @@ const argv = require('yargs')
   })
   .option('v', {
     alias: 'verbose',
-    demandOption: false,
     describe: 'Run in verbose mode',
     type: 'boolean'
   })
@@ -25,7 +24,7 @@ const argv = require('yargs')
   .example('$ brkn https://npmjs.com --attr href src --verbose')
   .help('help', 'Show this screen')
   .epilog('MIT (c) ' + pkg.author.name + ' <' + pkg.author.email + '>')
-  .version(() => { pkg.version; })
+  .version(pkg.version)
   .argv;
 
 brkn(argv._[0], argv.attr, argv.verbose)
