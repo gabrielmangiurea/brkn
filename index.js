@@ -11,6 +11,7 @@ const argv = require('yargs')
   )
   .option('a', {
     alias: 'attr',
+    default: ['href', 'src'],
     describe: 'The attributes to search for (space separated if more than one)',
     type: 'array'
   })
@@ -19,7 +20,7 @@ const argv = require('yargs')
     describe: 'Run in verbose mode',
     type: 'boolean'
   })
-  .usage('Usage: $ brkn <url> --attr <html attributes> [--verbose]')
+  .usage('Usage: $ brkn <url> --attr [html attributes (defaults: href src)] [--verbose]')
   .example('$ brkn https://nodejs.org --attr src')
   .example('$ brkn https://npmjs.com --attr href src --verbose')
   .help('help', 'Show this screen')
