@@ -7,6 +7,7 @@ const x        = require('x-ray')(),
 function brkn(url, attributes, verbose) {
   return new Promise((resolve, reject) => {
     if (url && validUrl.isUri(url)) {
+      let cachedUrls = [];
       let brokenUrls = [];
       let total = 0;
       let count = 0;
@@ -43,6 +44,11 @@ function brkn(url, attributes, verbose) {
           });
 
           values.forEach(value => {
+            if (value === url.concat('/') || cachedUrls.includes(value)) {
+              return;
+            }
+
+            cachedUrls.push(value);
             total++;
 
             request({
