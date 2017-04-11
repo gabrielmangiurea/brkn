@@ -4,6 +4,8 @@ const x        = require('x-ray')(),
       request  = require('request-promise'),
       validUrl = require('valid-url');
 
+const pkg = require('./package.json');
+
 function brkn(url, attributes, verbose) {
   return new Promise((resolve, reject) => {
     if (url && validUrl.isUri(url)) {
@@ -16,7 +18,7 @@ function brkn(url, attributes, verbose) {
         reject({
           status: 'ERR',
           message: 'Missing required argument: --attr'
-        })
+        });
       }
 
       attributes.forEach(attr => {
@@ -54,7 +56,7 @@ function brkn(url, attributes, verbose) {
             request({
               uri: value,
               headers: {
-                'User-Agent': 'brkn/' + require('./package.json').version + ' (' + require('./package.json').homepage + ')'
+                'User-Agent': 'brkn/' + pkg.version + ' (' + pkg.homepage + ')'
               },
               resolveWithFullResponse: true
             })

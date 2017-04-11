@@ -20,7 +20,8 @@ const argv = require('yargs')
     describe: 'Run in verbose mode',
     type: 'boolean'
   })
-  .usage('Usage: $ brkn <url> --attr [html attributes (defaults: href src)] [--verbose]')
+  .usage('Usage: $ brkn <url> --attr [html attributes (default: href src)] [--verbose]')
+  .example('$ brkn https://github.com')
   .example('$ brkn https://nodejs.org --attr src')
   .example('$ brkn https://npmjs.com --attr href src --verbose')
   .help('help', 'Show this screen')
@@ -35,9 +36,8 @@ brkn(argv._[0], argv.attr, argv.verbose)
     brokenUrls.forEach((brokenUrl, index) => {
       console.log((index + 1) + ':', brokenUrl);
     });
-    console.log('\n');
   } else {
-    console.log('\nThere are no broken URLs.\n');
+    console.log('\nThere are no broken URLs.');
   }
 })
 .catch(error => {
