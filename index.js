@@ -36,8 +36,9 @@ brkn(argv._[0], argv.attr, argv.verbose)
     brokenUrls.forEach((brokenUrl, index) => {
       console.log((index + 1) + ':', brokenUrl);
     });
+    console.log('\n');
   } else {
-    console.log('\nThere are no broken URLs.');
+    console.log('\nThere are no broken URLs.\n');
   }
 })
 .catch(error => {
