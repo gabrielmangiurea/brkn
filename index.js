@@ -1,46 +1,113 @@
-#!/usr/bin/env node
+'use strict';
 
-const chalk = require('chalk'),
-      brkn  = require('./brkn').brkn,
-      pkg   = require('./package.json');
+const urlResolve = require('url').resolve;
 
-const argv = require('yargs')
-  .command(
-    'url',
-    false
-  )
-  .option('a', {
-    alias: 'attr',
-    default: ['href', 'src'],
-    describe: 'The attributes to search for (space separated if more than one)',
-    type: 'array'
-  })
-  .option('v', {
-    alias: 'verbose',
-    describe: 'Run in verbose mode',
-    type: 'boolean'
-  })
-  .usage('Usage: $ brkn <url> --attr [html attributes (default: href src)] [--verbose]')
-  .example('$ brkn https://github.com')
-  .example('$ brkn https://nodejs.org --attr src')
-  .example('$ brkn https://npmjs.com --attr href src --verbose')
-  .help('help', 'Show this screen')
-  .epilog('MIT (c) ' + pkg.author.name + ' <' + pkg.author.email + '>')
-  .version(pkg.version)
-  .argv;
+const parseSource       = require('./lib/parse_source'),
+      eventEmitter      = require('./event_emitter'),
+      requestResource   = require('./lib/request_resource'),
+      extractAttributes = require('./lib/extract_attributes');
 
-brkn(argv._[0], argv.attr, argv.verbose)
-.then(brokenUrls => {
-  if (brokenUrls.length > 0) {
-    console.log('\nThe following URLs seem to be broken or could not accept GET requests:');
-    brokenUrls.forEach((brokenUrl, index) => {
-      console.log((index + 1) + ':', brokenUrl);
-    });
-    console.log('\n');
-  } else {
-    console.log('\nThere are no broken URLs.\n');
+module.exports = function(sources, attributes, baseUrl, opts) {
+  // init
+  let counter = {
+    global: {
+      current: 0,
+      total: 0
+    },
+    // object of sources counters
+    source: {}
+  };
+
+  let brokenUrls = [];
+  let cachedUrls = [];
+
+  // arguments validations
+  if(!Array.isArray(sources) || sources.length < 1) {
+    throw new Error('Sources argument must be an array with at least 1 element');
   }
-})
-.catch(error => {
-  console.log(chalk.bgRed(error.status), chalk.red(error.message), '\n');
-});
+
+  if(!baseUrl) {
+    throw new Error('Base URL argument must be a valid URL');
+  }
+
+  if(typeof opts !== 'object') {
+    throw new Error('Options argument must be of object type');
+  }
+
+  for(let source of sources) {
+    parseSource(source).then(parsed => {
+      // reset the source counter for each source
+      counter.source[source] = {};
+      counter.source[source].current = 0;
+      counter.source[source].total   = 0;
+
+      // initialize the brokenUrl and cachedUrls arrays for each source
+      brokenUrls[source] = [];
+      cachedUrls[source] = [];
+
+      let attrs = extractAttributes(parsed.payload, attributes, urlResolve(baseUrl, '/'));
+
+      for(let attr in attrs) {
+        for(let url of attrs[attr]) {
+          if(url === urlResolve(baseUrl, '/') || cachedUrls[source].includes(url)) {
+            continue;
+          }
+
+          ++counter.global.total;
+          ++counter.source[source].total;
+          cachedUrls[source].push(url);
+
+          requestResource(url)
+          .then(goodUrl => {
+            if(opts && opts.verbose) {
+              eventEmitter.emit('item', {
+                broken: false,
+                source: sources.length > 1 ? source : null,
+                statusCode: goodUrl.statusCode,
+                url
+              });
+            }
+          }).catch(badUrl => {
+            if(opts && opts.verbose) {
+              eventEmitter.emit('item', {
+                broken: true,
+                source: sources.length > 1 ? source : null,
+                statusCode: badUrl.statusCode,
+                url
+              });
+            }
+
+            brokenUrls[source].push(url);
+          }).then(() => {
+            if(sources.length > 1 && (++counter.source[source].current >= counter.source[source].total)) {
+              if(opts && opts.verbose) {
+                eventEmitter.emit('source', {
+                  source,
+                  brokenUrls: brokenUrls[source]
+                });
+              }
+            }
+
+            if(++counter.global.current >= counter.global.total) {
+              // brokenUrls is an array of objects
+              // with the keys being each of the sources
+              // and the values being every broken url for that source
+              // we only need the values for all the keys in this case
+              let broken = [];
+
+              for(let item in brokenUrls) {
+                for(let each of brokenUrls[item]) {
+                  broken.push(each);
+                }
+              }
+
+              eventEmitter.emit('end', broken);
+            }
+          })
+        }
+      }
+    }).catch(parsingError => {
+      eventEmitter.emit('error', parsingError);
+    });
+  }
+}

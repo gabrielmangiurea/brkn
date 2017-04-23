@@ -1,12 +1,11 @@
 {
   "name": "brkn",
-  "version": "0.3.3",
-  "description": "Yet another broken link checker CLI",
+  "version": "1.0.0",
+  "description": "Yet another broken link checker",
   "keywords": [
     "broken",
     "link",
-    "resource",
-    "cli"
+    "resource"
   ],
   "main": "index.js",
   "author": {
@@ -24,17 +23,16 @@
     "test": "ava ./test.js"
   },
   "dependencies": {
-    "chalk": "^1.1.3",
     "request": "^2.81.0",
     "request-promise": "^4.2.0",
     "valid-url": "^1.0.9",
-    "x-ray": "^2.3.2",
-    "yargs": "^7.0.2"
+    "xmldom": "^0.1.27",
+    "xpath": "0.0.24"
   },
   "devDependencies": {
-    "ava": "^0.19.0"
+    "ava": "^0.19.1"
   },
-  "bin": {
-    "brkn": "./index.js"
+  "engines": {
+    "node": ">= 6.10.2"
   }
 }
