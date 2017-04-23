@@ -31,7 +31,9 @@ ee.on('end', function(brokenUrls) {
 
 ### brkn(sources, attributes, baseUrl, [opts])
 
-Emits an `end` event with the inaccessible URLs found in `sources`.
+Emits an `end` event (type: `Array`) with the inaccessible URLs found in `sources`.
+
+Will emit `error` event (type: `String`) on URL/File parsing errors.
 
 #### sources
 
@@ -61,19 +63,20 @@ If true, **brkn** will emit two additional events:
 
 - `item`
   - emitted: after each scanned URL
-  - type: `object`
+  - type: `Object`
   - params:
-    - broken: `boolean`
-    - source: `string`
-    - statusCode: `integer`
-    - url: `string`
+    - broken: `Boolean`
+    - source: `String`
+    - statusCode: `Integer`
+    - url: `String`
 - `source`
   - emitted: after each completed source, when there are more than one
-  - type: `object`
+  - type: `Object`
   - params:
-    - source: `string`
-    - brokenUrls: `array`
+    - source: `String`
+    - brokenUrls: `Array`
 
 
 ## License
+
 MIT &copy; [Gabriel Mangiurea](https://gabrielmangiurea.github.io)
