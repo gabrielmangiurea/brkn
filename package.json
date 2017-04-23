@@ -1,6 +1,6 @@
 {
   "name": "brkn",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Yet another broken link checker",
   "keywords": [
     "broken",
@@ -14,7 +14,7 @@
     "url": "https://gabrielmangiurea.github.io"
   },
   "license": "MIT",
-  "respository": {
+  "repository": {
     "type": "git",
     "url": "https://github.com/GabrielMangiurea/brkn"
   },
