@@ -1,6 +1,6 @@
 {
   "name": "brkn",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Yet another broken link checker",
   "keywords": [
     "broken",
@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/GabrielMangiurea/brkn",
   "scripts": {
-    "test": "ava ./test.js"
+    "test": "xo && ava ./test.js"
   },
   "dependencies": {
     "request": "^2.81.0",
@@ -30,7 +30,8 @@
     "xpath": "0.0.24"
   },
   "devDependencies": {
-    "ava": "^0.19.1"
+    "ava": "^0.19.1",
+    "xo": "^0.18.1"
   },
   "engines": {
     "node": ">= 6.10.2"

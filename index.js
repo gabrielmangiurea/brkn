@@ -2,112 +2,116 @@
 
 const urlResolve = require('url').resolve;
 
-const parseSource       = require('./lib/parse_source'),
-      eventEmitter      = require('./event_emitter'),
-      requestResource   = require('./lib/request_resource'),
-      extractAttributes = require('./lib/extract_attributes');
+const parseSource = require('./lib/parse-source');
+const eventEmitter = require('./event-emitter');
+const requestResource = require('./lib/request-resource');
+const extractAttributes = require('./lib/extract-attributes');
 
-module.exports = function(sources, attributes, baseUrl, opts) {
-  // init
-  let counter = {
-    global: {
-      current: 0,
-      total: 0
-    },
-    // object of sources counters
-    source: {}
-  };
+module.exports = function (sources, attributes, baseUrl, opts) {
+	// Init
+	const counter = {
+		global: {
+			current: 0,
+			total: 0
+		},
+		// Object of sources counters
+		source: {}
+	};
 
-  let brokenUrls = [];
-  let cachedUrls = [];
+	const brokenUrls = [];
+	const cachedUrls = [];
 
-  // arguments validations
-  if(!Array.isArray(sources) || sources.length < 1) {
-    throw new Error('Sources argument must be an array with at least 1 element');
-  }
+	// Arguments validations
+	if (!Array.isArray(sources) || sources.length < 1) {
+		throw new Error('Sources argument must be an array with at least 1 element');
+	}
 
-  if(!baseUrl) {
-    throw new Error('Base URL argument must be a valid URL');
-  }
+	if (!baseUrl) {
+		throw new Error('Base URL argument must be a valid URL');
+	}
 
-  if(typeof opts !== 'object') {
-    throw new Error('Options argument must be of object type');
-  }
+	if (typeof opts !== 'object') {
+		throw new TypeError('Options argument must be of object type');
+	}
 
-  for(let source of sources) {
-    parseSource(source).then(parsed => {
-      // reset the source counter for each source
-      counter.source[source] = {};
-      counter.source[source].current = 0;
-      counter.source[source].total   = 0;
+	for (const source of sources) {
+		parseSource(source).then(parsed => {
+			// Reset the source counter for each source
+			counter.source[source] = {};
+			counter.source[source].current = 0;
+			counter.source[source].total = 0;
 
-      // initialize the brokenUrl and cachedUrls arrays for each source
-      brokenUrls[source] = [];
-      cachedUrls[source] = [];
+			// Initialize the brokenUrl and cachedUrls arrays for each source
+			brokenUrls[source] = [];
+			cachedUrls[source] = [];
 
-      let attrs = extractAttributes(parsed.payload, attributes, urlResolve(baseUrl, '/'));
+			const attrs = extractAttributes(parsed.payload, attributes, urlResolve(baseUrl, '/'));
 
-      for(let attr in attrs) {
-        for(let url of attrs[attr]) {
-          if(url === urlResolve(baseUrl, '/') || cachedUrls[source].includes(url)) {
-            continue;
-          }
+			for (const attr in attrs) {
+				if (Object.prototype.hasOwnProperty.call(attrs, attr)) {
+					for (const url of attrs[attr]) {
+						if (url === urlResolve(baseUrl, '/') || cachedUrls[source].includes(url)) {
+							continue;
+						}
 
-          ++counter.global.total;
-          ++counter.source[source].total;
-          cachedUrls[source].push(url);
+						++counter.global.total;
+						++counter.source[source].total;
+						cachedUrls[source].push(url);
 
-          requestResource(url)
-          .then(goodUrl => {
-            if(opts && opts.verbose) {
-              eventEmitter.emit('item', {
-                broken: false,
-                source: sources.length > 1 ? source : null,
-                statusCode: goodUrl.statusCode,
-                url
-              });
-            }
-          }).catch(badUrl => {
-            if(opts && opts.verbose) {
-              eventEmitter.emit('item', {
-                broken: true,
-                source: sources.length > 1 ? source : null,
-                statusCode: badUrl.statusCode,
-                url
-              });
-            }
+						requestResource(url)
+						.then(response => {
+							if (opts && opts.verbose) {
+								eventEmitter.emit('item', {
+									broken: false,
+									source: sources.length > 1 ? source : null,
+									statusCode: response.statusCode,
+									url
+								});
+							}
+						}).catch(err => {
+							if (opts && opts.verbose) {
+								eventEmitter.emit('item', {
+									broken: true,
+									source: sources.length > 1 ? source : null,
+									statusCode: err.statusCode,
+									url
+								});
+							}
 
-            brokenUrls[source].push(url);
-          }).then(() => {
-            if(sources.length > 1 && (++counter.source[source].current >= counter.source[source].total)) {
-              if(opts && opts.verbose) {
-                eventEmitter.emit('source', {
-                  source,
-                  brokenUrls: brokenUrls[source]
-                });
-              }
-            }
+							brokenUrls[source].push(url);
+						}).then(() => {
+							if (sources.length > 1 && (++counter.source[source].current >= counter.source[source].total)) {
+								if (opts && opts.verbose) {
+									eventEmitter.emit('source', {
+										source,
+										brokenUrls: brokenUrls[source]
+									});
+								}
+							}
 
-            if(++counter.global.current >= counter.global.total) {
-              // brokenUrls is an array of objects
-              // with the keys being each of the sources
-              // and the values being every broken url for that source
-              // we only need the values for all the keys in this case
-              let broken = [];
+							if (++counter.global.current >= counter.global.total) {
+								/* BrokenUrls is an array of objects
+								with the keys being each of the sources
+								and the values being every broken url for that source
+								we only need the values for all the keys in this case */
+								const broken = [];
 
-              for(let item in brokenUrls) {
-                for(let each of brokenUrls[item]) {
-                  broken.push(each);
-                }
-              }
+								for (const item in brokenUrls) {
+									if (Object.prototype.hasOwnProperty.call(brokenUrls, item)) {
+										for (const each of brokenUrls[item]) {
+											broken.push(each);
+										}
+									}
+								}
 
-              eventEmitter.emit('end', broken);
-            }
-          })
-        }
-      }
-    }).catch(parsingError => {
-      eventEmitter.emit('error', parsingError);
-    });
-  }
-}
+								eventEmitter.emit('end', broken);
+							}
+						});
+					}
+				}
+			}
+		}).catch(err => {
+			eventEmitter.emit('error', err);
+		});
+	}
+};
