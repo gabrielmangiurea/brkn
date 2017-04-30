@@ -14,13 +14,12 @@ $ npm install --save brkn
 
 ```javascript
 const brkn = require('brkn');
-const ee   = require('brkn/event-emitter');
 
 // execute the function
 brkn(['https://your.website.here/somepage.html'], ['href'], 'https://your.website.here', {verbose: false});
 
 // then listen for the 'end' event
-ee.on('end', function(brokenUrls) {
+brkn.events.on('end', function(brokenUrls) {
   console.log('Broken URLs:', brokenUrls);
   //=> 'Broken URLs: [...]'
 });

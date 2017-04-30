@@ -2,12 +2,14 @@
 
 const urlResolve = require('url').resolve;
 
+const EventEmitter = require('events').EventEmitter;
 const parseSource = require('./lib/parse-source');
-const eventEmitter = require('./event-emitter');
 const requestResource = require('./lib/request-resource');
 const extractAttributes = require('./lib/extract-attributes');
 
-module.exports = function (sources, attributes, baseUrl, opts) {
+const eventEmitter = new EventEmitter();
+
+function brkn(sources, attributes, baseUrl, opts) {
 	// Init
 	const counter = {
 		global: {
@@ -114,4 +116,7 @@ module.exports = function (sources, attributes, baseUrl, opts) {
 			eventEmitter.emit('error', err);
 		});
 	}
-};
+}
+
+module.exports = brkn;
+module.exports.events = eventEmitter;
