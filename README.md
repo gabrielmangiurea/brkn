@@ -77,6 +77,11 @@ If true, **brkn** will emit two additional events:
     - brokenUrls: `Array`
 
 
+## Related
+
+- [brkn-cli](https://www.npmjs.com/package/brkn-cli) - CLI for this module
+
+
 ## License
 
 MIT &copy; [Gabriel Mangiurea](https://gabrielmangiurea.github.io)
